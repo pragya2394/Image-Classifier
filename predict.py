@@ -106,6 +106,6 @@ def main():
 
     device = check_gpu(gpu_arg=args.gpu);
 
-    top_probs, top_labels, top_flowers = predict(args.image, model,args.top_k) # "flowers/test/28/image_05230.jpg"
+    check_sanity(args.image)  # "flowers/test/28/image_05230.jpg"
 if __name__ == '__main__':
     main()
