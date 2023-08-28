@@ -106,4 +106,4 @@ image_tensor = process_image(args.image)
 
 device = check_gpu(gpu_arg=args.gpu);
 
-check_sanity(args.image) # "flowers/test/28/image_05230.jpg"
+check_sanity(args.image) # try "flowers/test/28/image_05230.jpg"
