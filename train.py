@@ -22,8 +22,35 @@ def argparser():
     arg = parser.parse_args()
     return arg
 
-def validate(model, valid_loader, criterion):
-    model.to (device)
+def load_model(arch=args.arch):
+    if arch == 'VGG':
+        model = models.vgg16(pretrained=True)
+ 
+        for param in model.parameters():
+            param.requires_grad = False
+        
+        classifier = nn.Sequential(OrderedDict([('hidden1', nn.Linear(25088, 4096)),('relu1', nn.ReLU()),
+                                    ('dropout1', nn.Dropout(p = 0.3)),
+                                    ('hidden2', nn.Linear(4096, 1028)),('relu2', nn.ReLU()),
+                                    ('dropout2', nn.Dropout(p = 0.3)), 
+                                    ('hidden3', nn.Linear(1028, 102)),('relu2', nn.ReLU()),
+                                    ('output', nn.LogSoftmax(dim =1))
+                                               ]))
+    elif arch == 'Densenet':
+        model = models.densenet121(pretrained=True)
+        
+        for param in model.parameters():
+            param.requires_grad = False
+            
+        classifier = nn.Sequential(OrderedDict([('hidden1', nn.Linear(1024,512)),
+                                    ('dropout1', nn.Dropout(p = 0.3)),
+                                    ('hidden2', nn.Linear(512, 102)),('relu2', nn.ReLU()),
+                                    ('output', nn.LogSoftmax(dim =1))
+                                           ]))
+    return classifier
+
+
+def validate(model, validloader, criterion):
     valid_loss, accuracy = 0
     model.eval()
     with torch.no_grad():
@@ -80,19 +107,7 @@ def main():
 
     device = torch.device("cuda:0" if torch.cuda.is_available() and args.gpu else "cpu")
 
-
-    model = models.vgg19(pretrained=True)
-    for param in model.parameters():
-            param.requires_grad = False 
-
-    classifier = nn.Sequential(OrderedDict([('hidden1', nn.Linear(25088, 4096)),('relu1', nn.ReLU()),
-                                ('dropout1', nn.Dropout(p = 0.3)),
-                                ('hidden2', nn.Linear(4096, 1028)),('relu2', nn.ReLU()),
-                                ('dropout2', nn.Dropout(p = 0.3)), 
-                                ('hidden3', nn.Linear(1028, 102)),('relu2', nn.ReLU()),
-                                ('output', nn.LogSoftmax(dim =1))
-                                           ]))
-    model.classifier = classifier
+    model.classifier = load_model(args.arch)
 
     criterion = nn.NLLLoss() # defining loss
 
@@ -130,7 +145,6 @@ def main():
                 running_loss = 0
                 model.train()
 
-    model.to ('cpu') 
     model.class_to_idx = train_datasets.class_to_idx 
     checkpoint = {'input_size':25088,
                     'output_size':102,
@@ -142,5 +156,6 @@ def main():
                      'class_to_idx':model.class_to_idx}
     torch.save(checkpoint, 'checkpoint.pth')
     print('checkpoint has been saved!')
+    
 if __name__ == '__main__': 
     main()
