@@ -78,7 +78,7 @@ def main():
     with open('cat_to_name.json', 'r') as f:
         cat_to_name = json.load(f)
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() and args.gpu else "cpu")
 
 
     model = models.vgg19(pretrained=True)
@@ -131,7 +131,7 @@ def main():
                 model.train()
 
     model.to ('cpu') 
-    model.class_to_idx = train_image_datasets.class_to_idx 
+    model.class_to_idx = train_datasets.class_to_idx 
     checkpoint = {'input_size':25088,
                     'output_size':102,
                     'hidden_layers':[each for each in model.classifier],
