@@ -20,7 +20,7 @@ def arg_parser():
     return args
 
 
-def load_checkpoint(checkpoint_path):
+def load_checkpoint(path):
     checkpoint = torch.load("checkpoint.pth")
     model = models.vgg19(pretrained=True)
     for param in model.parameters(): 
@@ -106,4 +106,4 @@ image_tensor = process_image(args.image)
 
 device = check_gpu(gpu_arg=args.gpu);
 
-top_probs, top_labels, top_flowers = predict(args.image, model,args.top_k) # "flowers/test/28/image_05230.jpg"
+check_sanity(args.image) # "flowers/test/28/image_05230.jpg"
