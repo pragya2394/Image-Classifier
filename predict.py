@@ -20,7 +20,7 @@ def arg_parser():
     return args
 
 
-def load_checkpoint(path):
+def load_checkpoint(checkpoint_path):
     checkpoint = torch.load("checkpoint.pth")
     model = models.vgg19(pretrained=True)
     for param in model.parameters(): 
@@ -94,16 +94,18 @@ def check_sanity(image_path):
     top_probs, top_idxs, top_flowers = predict(image_path, model) 
     for x, y in zip(top_probs, top_flowers):
         print(f"Flower: {y} has probability {x}") 
+def main():
+    args = arg_parser()
 
-args = arg_parser()
+    with open(args.category_names, 'r') as f:
+            cat_to_name = json.load(f)
 
-with open(args.category_names, 'r') as f:
-        cat_to_name = json.load(f)
+    model = load_checkpoint(args.checkpoint)
 
-model = load_checkpoint(args.checkpoint)
+    image_tensor = process_image(args.image)
 
-image_tensor = process_image(args.image)
+    device = check_gpu(gpu_arg=args.gpu);
 
-device = check_gpu(gpu_arg=args.gpu);
-
-check_sanity(args.image) # try "flowers/test/28/image_05230.jpg"
+    top_probs, top_labels, top_flowers = predict(args.image, model,args.top_k) # "flowers/test/28/image_05230.jpg"
+if __name__ == '__main__':
+    main()
