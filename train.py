@@ -53,7 +53,7 @@ def load_model(arch):
 
 
 def validate(model, validloader, criterion):
-    valid_loss, accuracy = 0
+    valid_loss, accuracy = 0, 0
     model.eval()
     with torch.no_grad():
         for inputs, labels in validloader:
