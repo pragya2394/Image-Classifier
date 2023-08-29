@@ -22,9 +22,10 @@ def argparser():
     arg = parser.parse_args()
     return arg
 
-def load_model(arch=args.arch):
-    if arch == 'VGG':
-        model = models.vgg16(pretrained=True)
+def load_model(arch):
+    print(arch)
+    if arch == 'vgg19':
+        model = models.vgg19(pretrained=True)
  
         for param in model.parameters():
             param.requires_grad = False
@@ -36,7 +37,7 @@ def load_model(arch=args.arch):
                                     ('hidden3', nn.Linear(1028, 102)),('relu2', nn.ReLU()),
                                     ('output', nn.LogSoftmax(dim =1))
                                                ]))
-    elif arch == 'Densenet':
+    elif arch == 'densenet121':
         model = models.densenet121(pretrained=True)
         
         for param in model.parameters():
@@ -47,7 +48,8 @@ def load_model(arch=args.arch):
                                     ('hidden2', nn.Linear(512, 102)),('relu2', nn.ReLU()),
                                     ('output', nn.LogSoftmax(dim =1))
                                            ]))
-    return classifier
+    model.classifier = classifier
+    return model
 
 
 def validate(model, validloader, criterion):
@@ -107,18 +109,18 @@ def main():
 
     device = torch.device("cuda:0" if torch.cuda.is_available() and args.gpu else "cpu")
 
-    model.classifier = load_model(args.arch)
+    model = load_model(args.arch)
 
     criterion = nn.NLLLoss() # defining loss
 
     optimizer = optim.Adam(model.classifier.parameters(), lr=0.001) # to update weights of network
 
     model.to(device) 
-    epochs = 7
+    epochs = args.epochs
     print_every = 40
     steps = 0
 
-    for epoch in range (epochs):
+    for epoch in range(epochs):
         running_loss = 0
         for inputs, labels in trainloader:
             steps += 1
@@ -150,7 +152,7 @@ def main():
                     'output_size':102,
                     'hidden_layers':[each for each in model.classifier],
                      'droupout':0.3,
-                     'epochs':7,
+                     'epochs':args.epochs,
                      'classifier': model.classifier,
                      'state_dict':model.state_dict(),
                      'class_to_idx':model.class_to_idx}
